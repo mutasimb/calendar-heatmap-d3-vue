@@ -1,27 +1,15 @@
 <template>
-  <div class="container">
-    <svg class="calendar" :height="svgHeight + cellsize" :width="width + 2" ref="svg" />
-    <InfoBox :info="info" />
-  </div>
+  <svg class="calendar" :height="svgHeight + cellsize" :width="width + 2" ref="svg" />
 </template>
 
 <style lang="scss" scoped>
-.container {
-  display: grid;
-  grid-template-columns: auto 265px;
-  grid-template-rows: auto;
-  grid-template-areas: "calendar info-box";
-
-  margin: 0 auto;
-  max-width: 100%;
-  width: 1200px;
-}
 .calendar {
   grid-area: calendar;
 }
 </style>
 
 <script>
+import { mapMutations } from "vuex";
 import { interpolateCool } from "d3-scale-chromatic";
 import { range } from "d3-array";
 import { timeFormat, timeParse, utcParse } from "d3-time-format";
@@ -45,6 +33,9 @@ export default {
   },
   props: {
     filesData: Array
+  },
+  methods: {
+    ...mapMutations(["loadInfoBox"])
   },
   mounted: function() {
     let cellsize = 17,
@@ -144,10 +135,10 @@ export default {
         d.modifiedTime ? (d.sameDay ? "1.0" : "0.35") : "1.0"
       )
       .on("mouseover", d => {
-        if (d.fileName) this.info = d;
+        if (d.fileName) this.loadInfoBox(d);
       })
       .on("mouseout", d => {
-        this.info = {};
+        if (Object.keys(this.$store.state.infoBox).length) this.loadInfoBox({});
       })
       .on("click", d => {
         this.$router.push({ name: "FileDetails", params: { id: d.id } });
