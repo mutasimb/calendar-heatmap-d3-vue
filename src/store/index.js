@@ -1,7 +1,8 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import axios from "axios";
-import { timeFormat, utcParse } from "d3-time-format";
+import { timeFormat, utcParse, timeParse } from "d3-time-format";
+import { timeMinute } from "d3-time";
 
 Vue.use(Vuex);
 
@@ -12,23 +13,33 @@ export const store = new Vuex.Store({
   },
   getters: {
     wrfFilesLength: state => state.wrfFiles.length,
-    processWrfFiles: state =>
-      state.wrfFiles.map(el => {
-        let dateDigitFormatter = timeFormat("%Y%m%d"),
-          date = utcParse("%Y-%-m-%-d")(
+    processWrfFiles: state => {
+      let zone = new Date().getTimezoneOffset();
+      return state.wrfFiles.map(el => {
+        let modifiedDateId = datetime =>
+            +timeFormat("%Y%m%d")(timeMinute.offset(datetime, 360 + zone)),
+          forecastDate = timeParse("%Y-%-m-%-d")(
             `${el.forecastDate.y}-${el.forecastDate.m}-${el.forecastDate.d}`
-          );
+          ),
+          modifiedDateTimeUtc = utcParse("%Y-%m-%dT%H:%M:%S.%LZ")(
+            el.modifiedTime
+          ),
+          modifiedDateTimeBd = timeMinute.offset(
+            modifiedDateTimeUtc,
+            360 + zone
+          ),
+          modifiedDateBd = timeFormat("%Y%m%d")(modifiedDateTimeBd),
+          modifiedTimeBd = timeFormat("%H%M%S.%L")(modifiedDateTimeBd);
         return {
           ...el,
-          date,
-          sameDay:
-            +dateDigitFormatter(
-              utcParse("%Y-%m-%dT%H:%M:%S.%LZ")(el.modifiedTime)
-            ) === +dateDigitFormatter(date),
-          id: +dateDigitFormatter(date),
+          modifiedDateBd,
+          modifiedTimeBd,
+          sameDay: +modifiedDateBd === +timeFormat("%Y%m%d")(forecastDate),
+          id: +timeFormat("%Y%m%d")(forecastDate),
           yr: el.forecastDate.y
         };
-      }),
+      });
+    },
     hoveredBoxInfo: state => state.infoBox
   },
   mutations: {

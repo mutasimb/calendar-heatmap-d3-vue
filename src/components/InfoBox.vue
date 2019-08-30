@@ -8,7 +8,7 @@
       <h4>{{ info.fileName }}</h4>
       <p>Forecast: {{ info.id | parseForecastDate | formatForecastDate }}</p>
       <p>Size: {{ info.size | bytesToSize }}</p>
-      <p>Received on {{ info.modifiedTime | parseReceivedDateTime | formatReceivedDateTime }}</p>
+      <p>Received on {{ (info.modifiedDateBd + " " + info.modifiedTimeBd) | parseReceivedDateTime | formatReceivedDateTime }}</p>
     </template>
   </div>
 </template>
@@ -38,7 +38,7 @@
 </style>
 
 <script>
-import { utcParse, timeParse, timeFormat } from "d3-time-format";
+import { timeParse, timeFormat } from "d3-time-format";
 
 export default {
   props: {
@@ -46,7 +46,7 @@ export default {
   },
   filters: {
     parseReceivedDateTime: function(timeStr) {
-      return utcParse("%Y-%m-%dT%H:%M:%S.%LZ")(timeStr);
+      return timeParse("%Y%m%d %H%M%S.%L")(timeStr);
     },
     formatReceivedDateTime: function(datetimeObj) {
       return timeFormat("%B %-d, %Y at %-I:%M:%S %p")(datetimeObj);

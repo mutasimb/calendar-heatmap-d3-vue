@@ -127,7 +127,7 @@ export default {
       .attr("fill", d =>
         d.modifiedTime
           ? d.sameDay
-            ? colorScale(utcParse("%H:%M:%S.%LZ")(d.modifiedTime.split("T")[1]))
+            ? colorScale(timeParse("%H%M%S.%L")(d.modifiedTimeBd))
             : "red"
           : "#eeeeee"
       )
